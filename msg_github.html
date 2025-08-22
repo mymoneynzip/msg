@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>경조사 메시지 생성기</title>
+  <meta name="description" content="결혼, 장례, 돌잔치, 부모님잔치, 반려동물 장례 메시지 생성/공유" />
+  <style>
+    :root{
+      --bg:#0b0c10; --card:#121319; --muted:#7d8590; --text:#e6edf3; --acc:#6dd3fb; --acc2:#b7f399;
+      --danger:#ff6b6b; --ok:#34d399; --brand:#6366f1; --shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#0b0c10, #0e1117 40%, #0b0c10);
+         color:var(--text);font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Apple SD Gothic Neo,Helvetica,Arial,sans-serif;
+         -webkit-font-smoothing:antialiased;}
+    .wrap{max-width:680px;margin:0 auto;padding:24px;}
+    .card{background:var(--card);border:1px solid #1f232b;border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+    h1{font-size:24px;margin:0 0 10px;letter-spacing:-.3px}
+    p.lead{margin:0 0 16px;color:var(--muted);font-size:14px}
+    .grid{display:grid;gap:14px}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    label{display:block;font-weight:600;margin-bottom:8px}
+    .radio-group{display:grid;gap:10px}
+    .radio{display:flex;align-items:center;gap:10px;background:#0e1320;border:1px solid #202635;padding:12px;border-radius:14px}
+    .radio input{transform:scale(1.2)}
+    .note{font-size:12px;color:var(--muted)}
+    input[type="text"], .ghost{
+      width:100%;padding:12px 14px;border-radius:12px;border:1px solid #263042;background:#0b1222;color:var(--text);outline:none;
+    }
+    input[type="text"]:focus{border-color:var(--acc)}
+    button{appearance:none;border:0;border-radius:14px;padding:14px 16px;font-weight:700;cursor:pointer}
+    .btn{background:linear-gradient(135deg,var(--brand),#22d3ee);color:#fff;box-shadow:0 8px 20px rgba(99,102,241,.3)}
+    .btn:active{transform:translateY(1px)}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid #253046}
+    .hidden{display:none}
+
+    /* Viewer */
+    .viewer h2{font-size:20px;margin:0 0 12px}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-bottom:10px}
+    .paper{background:#0c111b;border:1px dashed #24314a;border-radius:16px;padding:18px}
+    $1
+    .heroimg{width:100%;max-height:320px;object-fit:cover;border-radius:12px;border:1px solid #24314a;display:block;margin:0 auto 10px;}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+    /* Tiny icon badges */
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:10px;border-radius:14px;border:1px solid #24314a;background:#0b1222}
+    .ico{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#111a2c}
+    .ico svg{width:18px;height:18px}
+
+    @media (prefers-color-scheme: light){
+      :root{--bg:#f6f8fa;--card:#ffffff;--text:#0d1117;--muted:#57606a}
+      body{background:linear-gradient(180deg,#f6f8fa,#fff)}
+      .radio{background:#f8fafc;border-color:#e5e7eb}
+      input[type="text"], .ghost{background:#fff;border-color:#e5e7eb}
+      .paper{background:#fafcff;border-color:#e5e7eb}
+      .btn-ghost{border-color:#e5e7eb}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Screen 1: Form -->
+    <section id="screen-form" class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h1>경조사 메시지 생성기</h1>
+        <div class="badge"><span class="ico" aria-hidden="true">💌</span>간편 생성 · 공유 링크</div>
+      </div>
+      <p class="lead">필요한 경조사 문구를 선택하고 정보를 입력하세요. 생성 후 링크로 공유할 수 있습니다.</p>
+
+      <div class="grid">
+        <div>
+          <label>질문1. 경조사 종류를 선택하세요 <span class="note">(필수)</span></label>
+          <div class="radio-group" role="radiogroup" aria-label="경조사 종류">
+            <label class="radio"><input type="radio" name="type" value="wedding"> 결혼</label>
+            <label class="radio"><input type="radio" name="type" value="funeral"> 가족장례식</label>
+            <label class="radio"><input type="radio" name="type" value="firstbirthday"> 돌잔치</label>
+            <label class="radio"><input type="radio" name="type" value="parents"> 부모님잔치</label>
+            <label class="radio"><input type="radio" name="type" value="petfuneral"> 애견·애묘 장례식</label>
+          </div>
+        </div>
+
+        <div id="row-aaa" class="hidden">
+          <label>질문2. 돌잔치인 경우, 아이 이름 <span class="note">(선택)</span></label>
+          <input type="text" id="input-aaa" maxlength="20" placeholder="아이 이름 (예: 지우)" />
+          <p class="note">입력 시 메시지 내 AAA가 아이 이름으로 바뀝니다.</p>
+        </div>
+
+        <div>
+          <label>질문3. 발송하는 분의 이름 <span class="note">(필수)</span></label>
+          <input type="text" id="input-bbb" maxlength="20" placeholder="보내는 이 (예: 김OO)" required />
+        </div>
+
+        <div class="row" style="justify-content:flex-end;margin-top:4px">
+          <button id="btn-generate" class="btn">생성된 경조사 문구 HTML 보기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Viewer -->
+    <section id="screen-view" class="card hidden viewer">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 id="view-title">메시지 보기</h2>
+        <div id="badge-type" class="badge"><span class="ico" id="type-emoji" aria-hidden="true">✨</span><span id="type-label">유형</span></div>
+      </div>
+      <div class="meta" id="meta"></div>
+
+      <div class="paper">
+        <div id="msg-image" style="text-align:center;margin-bottom:10px;font-size:28px"></div>
+        <div id="message" class="msg"></div>
+      </div>
+
+      <div class="toolbar">
+        <button id="btn-copy" class="btn">링크 복사</button>
+        <button id="btn-share" class="btn-ghost">공유하기</button>
+        <button id="btn-home" class="btn-ghost">처음으로</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // --- Utilities ---
+    const $ = (s)=>document.querySelector(s);
+    const byId = (id)=>document.getElementById(id);
+
+    const typeMeta = {
+      wedding: {label:'결혼', emoji:'💍', image:'img01.png'},
+      funeral: {label:'가족장례식', emoji:'🕊️', image:'img02.png'},
+      firstbirthday: {label:'돌잔치', emoji:'🎂', image:'img03.png'},
+      parents: {label:'부모님잔치', emoji:'🌷', image:'img04.png'},
+      petfuneral: {label:'애견·애묘 장례식', emoji:'🐾', image:'img05.png'}
+    };
+
+    function todayString(){
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth()+1).padStart(2,'0');
+      const d = String(now.getDate()).padStart(2,'0');
+      return `${y}년 ${m}월 ${d}일`;
+    }
+
+    function randId(len=12){
+      // base36 random id, >= 9 chars
+      let s = '';
+      while(s.length < len){ s += Math.random().toString(36).slice(2); }
+      return s.slice(0,len);
+    }
+
+    function encodePayload(obj){
+      const json = JSON.stringify(obj);
+      const b64 = btoa(unescape(encodeURIComponent(json))); // base64
+      return b64.replaceAll('+','-').replaceAll('/','_').replace(/=+$/,''); // url-safe
+    }
+    function decodePayload(str){
+      const b64 = str.replaceAll('-','+').replaceAll('_','/');
+      const pad = '='.repeat((4 - (b64.length % 4)) % 4);
+      const json = decodeURIComponent(escape(atob(b64 + pad)));
+      return JSON.parse(json);
+    }
+
+    function sanitize(text){
+      return String(text||'').replace(/[&<>\"']/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));
+    }
+
+    // --- Templates ---
+    const templates = {
+      wedding: `오래전부터 두 분의 소중한 인연을 지켜보며 오늘을 손꼽아 기다렸습니다. 진심으로 축하드립니다.
+두 사람이 함께하는 새로운 시작에 아낌없는 축복을 보냅니다. 이제 서로의 부족함을 채워주고, 기쁠 때나 슬플 때나 변함없이 곁을 지키며, 서로에게 가장 든든한 버팀목이 되어주세요. 서로를 존중하고 아끼는 마음으로 만들어가는 가정은 분명 이 세상 그 어떤 보석보다 빛날 것입니다. 두 분의 사랑이 늘 오늘처럼 아름답게 빛나기를 바라며, 함께하는 매일매일이 행복과 사랑으로 가득하길 진심으로 기도하겠습니다.
+
+직접 찾아가 두 분의 행복한 순간을 함께하고 싶었으나, 부득이하게 참석하지 못해 아쉬운 마음 금할 길이 없습니다. 너른 마음으로 양해해주시면 감사하겠습니다. 이렇게 마음으로나마 두 분의 앞날을 응원하며 축복의 마음을 전합니다.
+다시 한번 결혼을 진심으로 축하하며, 두 분의 앞날에 건강과 행복이 가득하기를 바랍니다.
+{발송한 날짜}
+
+BBB 드림`,
+      funeral: `가슴 아픈 소식에 슬픔을 금할 길이 없습니다. 사랑하는 분을 뜻하지 않게 떠나보낸 상주님께 깊은 위로의 말씀을 전합니다. 삼가 고인의 명복을 빕니다.
+갑작스러운 이별의 아픔은 어떤 말로도 위로가 되지 않으리라 생각합니다. 함께했던 아름다운 시간과 소중한 추억들이 이제는 그리움이라는 이름으로 남았을 것입니다. 부디 마음속에 담아두었던 모든 슬픔과 그리움을 충분히 흘려보내시고, 다시금 평온을 찾으시기를 진심으로 기도합니다. 이 비통한 시간들을 이겨낼 수 있도록 상주님과 가족분들의 마음에 따뜻한 위안이 깃들기를 바랍니다.
+
+지금 당장이라도 달려가 슬픔을 함께 나누고 싶은 마음 굴뚝같지만, 애석하게도 개인적인 사정으로 인해 직접 찾아뵙지 못하는 점, 넓은 마음으로 헤아려주시면 감사하겠습니다. 이렇게 마음으로만 함께하는 것이 송구스럽지만, 먼발치에서나마 깊은 애도를 표하며 고인과의 마지막 인사를 대신하고자 합니다. 부디 용서해 주십시오.
+다시 한번 고인의 영면을 기원하며, 슬픔에 잠긴 상주님과 가족분들의 평안을 바랍니다.
+{발송한 날짜}
+
+BBB 드림`,
+      firstbirthday: `사랑스러운 AAA의 첫 번째 생일을 진심으로 축하합니다. 소중한 첫돌을 축복하며, 잔치를 준비한 부모님께도 축하의 말씀을 전합니다.
+지난 1년간 함께 웃고 울며 밤낮없이 애쓰셨을 부모님의 노고에 진심으로 경의를 표합니다. 자녀가 건강하고 씩씩하게 자라는 모습은 부모님께는 더할 나위 없는 기쁨이었을 것입니다. 앞으로도 무럭무럭 자라 지혜롭고 밝은 아이로 성장하기를 바라며, 자녀의 앞날에 늘 행복한 웃음과 사랑이 가득하기를 기도하겠습니다.
+
+직접 찾아가 첫 번째 생일을 축하해 주고 싶었으나, 부득이한 사정으로 함께하지 못해 아쉬운 마음 금할 길이 없습니다. 이렇게 마음으로나마 첫돌을 축복하며 온 가족의 앞날에 늘 행복과 기쁨이 함께하기를 기원합니다.
+다시 한번 AAA의 첫돌을 축하하며, 가정에 늘 건강과 행복이 가득하기를 바랍니다.
+{발송한 날짜}
+
+BBB 드림`,
+      parents: `사랑하는 부모님께서 맞으신 잔치를 진심으로 축하드립니다. 귀한 날, 잔치를 준비한 가족분들께도 축하의 말씀을 전합니다.
+가족을 위해 평생을 헌신해 오신 부모님께서 맞이하실 사랑과 존경 속에서 보내는 가장 아름다운 순간이 되시길 바랍니다. 부모님께서 베푸신 따스한 사랑과 깊은 가르침이 있었기에, 지금의 행복한 가족이 존재할 수 있었습니다. 그 크신 사랑에 깊이 감사드리며, 앞으로도 변함없이 건강하고 행복하게 오래오래 하시기를 간절히 바랍니다. 가족 모두의 인생에 빛나는 순간들이 앞으로도 영원히 이어지기를 진심으로 기원합니다.
+
+직접 찾아뵙고 축하의 인사를 전해야 마땅하지만, 부득이한 사정으로 함께하지 못해 죄송한 마음 금할 길이 없습니다. 이렇게나마 마음으로 깊은 존경과 축하를 전하는 점, 너그러이 이해해주시면 감사하겠습니다.
+다시 한번 부모님의 뜻깊은 잔치를 축하드리며, 가정에 늘 건강과 행복이 가득하기를 바랍니다.
+{발송한 날짜}
+
+BBB 드림`,
+      petfuneral: `사랑하는 가족을 떠나보낸 친구에게 깊은 위로의 마음을 전합니다. 갑작스러운 이별 소식에 저 또한 마음이 많이 아픕니다.
+가족이나 다름없었던 소중한 존재를 떠나보낸 슬픔은 어떤 말로도 헤아릴 수 없으리라 생각합니다. 함께했던 모든 시간들이 소중한 추억으로 남았을 것입니다. 부디 마음속 깊이 간직하고 있던 모든 슬픔과 그리움을 충분히 흘려보내고, 다시 일상으로 돌아와 평온을 찾기를 진심으로 바랍니다. 이 힘든 시간을 잘 이겨낼 수 있도록 친구와 가족의 마음에 따뜻한 위안이 깃들기를 기도하겠습니다.
+
+직접 찾아가 슬픔을 함께 나누고 싶었으나, 여의치 않아 마음으로만 함께하는 점 이해해주길 바랍니다. 이렇게 메시지로 대신하는 점이 송구스럽지만, 먼발치에서나마 깊은 애도를 표합니다.
+다시 한번 깊은 위로의 말씀을 전하며, 마음에 평안이 깃들기를 바랍니다.
+{발송한 날짜}
+
+BBB 드림`
+    };
+
+    // --- State & Elements ---
+    const rowAAA = byId('row-aaa');
+    const inputAAA = byId('input-aaa');
+    const inputBBB = byId('input-bbb');
+
+    document.querySelectorAll('input[name="type"]').forEach(r=>{
+      r.addEventListener('change',()=>{
+        rowAAA.classList.toggle('hidden', r.value !== 'firstbirthday' || !r.checked);
+      });
+    });
+
+    byId('btn-generate').addEventListener('click', (e)=>{
+      e.preventDefault();
+      const type = (document.querySelector('input[name="type"]:checked')||{}).value;
+      if(!type){ alert('경조사 종류를 선택하세요.'); return; }
+      const bbbRaw = inputBBB.value.trim();
+      if(!bbbRaw){ alert('발송자 이름(BBB)을 입력하세요.'); return; }
+      const aaaRaw = type==='firstbirthday' ? inputAAA.value.trim() : '';
+
+      const date = todayString();
+      const payload = { t:type, a: aaaRaw, b: bbbRaw, d: date };
+      const id = randId(12);
+      const p = encodePayload(payload);
+      const url = `${location.origin}${location.pathname}#v=1&r=${id}&p=${p}`;
+      // Navigate to viewer
+      location.href = url;
+    });
+
+    // --- Viewer logic ---
+    function show(name){
+      byId('screen-form').classList.toggle('hidden', name!=='form');
+      byId('screen-view').classList.toggle('hidden', name!=='view');
+    }
+
+    function applyTemplate({t,a,b,d}){
+      const meta = typeMeta[t] || {label:'메시지',emoji:'✨',image:'✨'};
+      byId('view-title').textContent = `${meta.label} 메시지`;
+      byId('type-label').textContent = meta.label;
+      byId('type-emoji').textContent = meta.emoji;
+      const imgWrap = byId('msg-image');
+      imgWrap.innerHTML = '';
+      if (meta.image) {
+        const img = document.createElement('img');
+        img.src = /^(https?:)?\//.test(meta.image) ? meta.image : `./${meta.image}`;
+        img.alt = `${meta.label} 이미지`;
+        img.className = 'heroimg';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.referrerPolicy = 'no-referrer';
+        imgWrap.appendChild(img);
+      }
+
+      let text = templates[t] || '';
+      text = text.replaceAll('AAA', sanitize(a||'AAA'))
+                 .replaceAll('BBB', sanitize(b))
+                 .replaceAll('{발송한 날짜}', sanitize(d));
+      byId('message').textContent = text; // keep as textContent to avoid XSS
+      byId('meta').textContent = `${d} · 생성된 링크는 메시지 뷰어 전용입니다.`;
+    }
+
+    function parseHash(){
+      const h = location.hash || '';
+      if(!h.startsWith('#')) return null;
+      const params = new URLSearchParams(h.slice(1));
+      if(params.get('v')!== '1') return null;
+      const p = params.get('p');
+      if(!p) return null;
+      try{ return decodePayload(p); }catch{ return null; }
+    }
+
+    function init(){
+      const data = parseHash();
+      if(data){
+        show('view');
+        applyTemplate(data);
+      } else {
+        show('form');
+      }
+    }
+
+    // Buttons in viewer
+    byId('btn-copy').addEventListener('click', async ()=>{
+      try{ await navigator.clipboard.writeText(location.href); alert('링크가 복사되었습니다.'); }
+      catch{ prompt('복사할 링크입니다. 수동 복사해주세요:', location.href); }
+    });
+
+    byId('btn-share').addEventListener('click', async ()=>{
+      if(navigator.share){
+        try{ await navigator.share({ title: document.title, text: byId('view-title').textContent, url: location.href }); }
+        catch{ /* user canceled */ }
+      } else {
+        alert('이 브라우저는 공유 기능을 지원하지 않습니다. 링크 복사를 이용해주세요.');
+      }
+    });
+
+    byId('btn-home').addEventListener('click', ()=>{
+      history.pushState({}, '', location.pathname);
+      show('form');
+      // reset selection
+      document.querySelectorAll('input[name="type"]').forEach(r=>r.checked=false);
+      rowAAA.classList.add('hidden');
+      inputAAA.value='';
+      inputBBB.value='';
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+
+    window.addEventListener('hashchange', init);
+    init();
+  </script>
+</body>
+</html>
